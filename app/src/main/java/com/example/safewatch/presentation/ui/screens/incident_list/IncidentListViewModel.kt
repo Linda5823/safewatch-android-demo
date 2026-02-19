@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.safewatch.data.repository.PostRepository
 import com.example.safewatch.domain.model.Incident
+import com.example.safewatch.domain.usecase.GetIncidentsUseCase
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -16,23 +17,15 @@ class IncidentListViewModel : ViewModel() {
 
     val uiState: StateFlow<IncidentListUiState> = _uiState.asStateFlow()
 
-    private val repo = PostRepository()
 
+    private val getIncidents = GetIncidentsUseCase()
 
     private fun load() {
         viewModelScope.launch {
             _uiState.value = IncidentListUiState.Loading
             try {
-                val posts = repo.fetchPosts()
-
-                val items = posts.map {
-                    Incident(
-                        id = it.id.toString(),
-                        happenedAtEpochMillis = System.currentTimeMillis(),
-                        cameraName = it.title,
-                        locationLabel = it.body
-                    )
-                }
+                // Suspend call must be done within a coroutine.
+                val items = getIncidents()
 
                 _uiState.value = if (items.isEmpty()) {
                     IncidentListUiState.Empty
@@ -46,7 +39,6 @@ class IncidentListViewModel : ViewModel() {
         }
     }
 
-
     init {
         load()
     }
@@ -56,6 +48,87 @@ class IncidentListViewModel : ViewModel() {
     }
 
 
+
+//---------------------The 3rd version:-------------------------
+
+//    private val repo = PostRepository()
+//
+//
+//    private fun load() {
+//        viewModelScope.launch {
+//            _uiState.value = IncidentListUiState.Loading
+//            try {
+//                // Suspend call must be done within a coroutine.
+//                val items = repo.fetchIncidents()
+//
+//                _uiState.value = if (items.isEmpty()) {
+//                    IncidentListUiState.Empty
+//                } else {
+//                    IncidentListUiState.Success(items)
+//                }
+//
+//            } catch (t: Throwable) {
+//                _uiState.value = IncidentListUiState.Error(t.message ?: "Network error")
+//            }
+//        }
+//    }
+
+
+
+//    init {
+//        load()
+//    }
+//
+//    fun refresh() {
+//        load()
+//    }
+
+
+
+
+//---------------------The 2nd version:-------------------------
+
+//    private val repo = PostRepository()
+//
+//
+//    private fun load() {
+//        viewModelScope.launch {
+//            _uiState.value = IncidentListUiState.Loading
+//            try {
+//                val posts = repo.fetchPosts()
+//
+//                val items = posts.map {
+//                    Incident(
+//                        id = it.id.toString(),
+//                        happenedAtEpochMillis = System.currentTimeMillis(),
+//                        cameraName = it.title,
+//                        locationLabel = it.body
+//                    )
+//                }
+//
+//                _uiState.value = if (items.isEmpty()) {
+//                    IncidentListUiState.Empty
+//                } else {
+//                    IncidentListUiState.Success(items)
+//                }
+//
+//            } catch (t: Throwable) {
+//                _uiState.value = IncidentListUiState.Error(t.message ?: "Network error")
+//            }
+//        }
+//    }
+
+
+//    init {
+//        load()
+//    }
+//
+//    fun refresh() {
+//        load()
+//    }
+
+
+//---------------------The 1st version:-------------------------
 
 //    private fun load() {
 //        viewModelScope.launch {
@@ -97,6 +170,14 @@ class IncidentListViewModel : ViewModel() {
 //                tags = listOf("person")
 //            )
 //        )
+//    }
+
+//    init {
+//        load()
+//    }
+//
+//    fun refresh() {
+//        load()
 //    }
 
 }
