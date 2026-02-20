@@ -1,5 +1,10 @@
 package com.example.safewatch.presentation.ui.screens.incident_list
 
+import android.app.Application
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.lifecycle.ViewModelProvider
+import androidx.compose.ui.platform.LocalContext
+
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -11,6 +16,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.safewatch.domain.model.Incident
 import java.text.SimpleDateFormat
@@ -18,11 +24,17 @@ import java.util.Date
 import java.util.Locale
 
 
-@OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun IncidentListScreen(
-    vm: IncidentListViewModel = viewModel()
-) {
+fun IncidentListScreen() {
+
+    val context = LocalContext.current
+    val app = context.applicationContext as Application
+
+    val vm: IncidentListViewModel = viewModel(
+        factory = ViewModelProvider.AndroidViewModelFactory.getInstance(app)
+    )
+
     val uiState by vm.uiState.collectAsState()
 
     Scaffold(

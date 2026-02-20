@@ -1,51 +1,126 @@
 package com.example.safewatch.presentation.ui.screens.incident_list
 
-import androidx.lifecycle.ViewModel
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.safewatch.data.repository.PostRepository
-import com.example.safewatch.domain.model.Incident
 import com.example.safewatch.domain.usecase.GetIncidentsUseCase
-import kotlinx.coroutines.delay
+import com.example.safewatch.domain.usecase.RefreshIncidentsUseCase
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
-class IncidentListViewModel : ViewModel() {
+class IncidentListViewModel(app: Application) : AndroidViewModel(app) {
+
+    private val getIncidents = GetIncidentsUseCase(app)
+    private val refreshIncidents = RefreshIncidentsUseCase(app)
 
     private val _uiState = MutableStateFlow<IncidentListUiState>(IncidentListUiState.Loading)
-
     val uiState: StateFlow<IncidentListUiState> = _uiState.asStateFlow()
-
-
-    private val getIncidents = GetIncidentsUseCase()
-
-    private fun load() {
-        viewModelScope.launch {
-            _uiState.value = IncidentListUiState.Loading
-            try {
-                // Suspend call must be done within a coroutine.
-                val items = getIncidents()
-
-                _uiState.value = if (items.isEmpty()) {
-                    IncidentListUiState.Empty
-                } else {
-                    IncidentListUiState.Success(items)
-                }
-
-            } catch (t: Throwable) {
-                _uiState.value = IncidentListUiState.Error(t.message ?: "Network error")
-            }
-        }
-    }
 
     init {
         load()
     }
 
-    fun refresh() {
-        load()
+    /**
+     * Cache-first load:
+     * - returns cached DB results if present
+     * - otherwise hits network and caches
+     */
+    private fun load() {
+        viewModelScope.launch {
+            _uiState.value = IncidentListUiState.Loading
+            try {
+                val items = getIncidents()
+                _uiState.value = if (items.isEmpty()) {
+                    IncidentListUiState.Empty
+                } else {
+                    IncidentListUiState.Success(items)
+                }
+            } catch (t: Throwable) {
+                _uiState.value = IncidentListUiState.Error(t.message ?: "Load failed")
+            }
+        }
     }
+
+    /**
+     * Force refresh:
+     * - always hits network
+     * - updates DB
+     * - returns latest
+     */
+    fun refresh() {
+        viewModelScope.launch {
+            _uiState.value = IncidentListUiState.Loading
+            try {
+                val items = refreshIncidents()
+                _uiState.value = if (items.isEmpty()) {
+                    IncidentListUiState.Empty
+                } else {
+                    IncidentListUiState.Success(items)
+                }
+            } catch (t: Throwable) {
+                _uiState.value = IncidentListUiState.Error(t.message ?: "Refresh failed")
+            }
+        }
+    }
+
+
+
+
+
+
+
+
+//package com.example.safewatch.presentation.ui.screens.incident_list
+//
+//import androidx.lifecycle.ViewModel
+//import androidx.lifecycle.viewModelScope
+//import com.example.safewatch.data.repository.PostRepository
+//import com.example.safewatch.domain.model.Incident
+//import com.example.safewatch.domain.usecase.GetIncidentsUseCase
+//import kotlinx.coroutines.delay
+//import kotlinx.coroutines.flow.MutableStateFlow
+//import kotlinx.coroutines.flow.StateFlow
+//import kotlinx.coroutines.flow.asStateFlow
+//import kotlinx.coroutines.launch
+//
+//class IncidentListViewModel : ViewModel() {
+//
+//    private val _uiState = MutableStateFlow<IncidentListUiState>(IncidentListUiState.Loading)
+//
+//    val uiState: StateFlow<IncidentListUiState> = _uiState.asStateFlow()
+//
+//
+//    private val getIncidents = GetIncidentsUseCase()
+//
+//    private fun load() {
+//        viewModelScope.launch {
+//            _uiState.value = IncidentListUiState.Loading
+//            try {
+//                // Suspend call must be done within a coroutine.
+//                val items = getIncidents()
+//
+//                _uiState.value = if (items.isEmpty()) {
+//                    IncidentListUiState.Empty
+//                } else {
+//                    IncidentListUiState.Success(items)
+//                }
+//
+//            } catch (t: Throwable) {
+//                _uiState.value = IncidentListUiState.Error(t.message ?: "Network error")
+//            }
+//        }
+//    }
+//
+//    init {
+//        load()
+//    }
+//
+//    fun refresh() {
+//        load()
+//    }
+//    }
 
 
 
