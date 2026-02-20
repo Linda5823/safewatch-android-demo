@@ -1,7 +1,6 @@
 package com.example.safewatch.presentation.ui.screens.incident_list
 
 import android.app.Application
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.compose.ui.platform.LocalContext
 
@@ -16,7 +15,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.safewatch.domain.model.Incident
 import java.text.SimpleDateFormat
@@ -24,7 +22,21 @@ import java.util.Date
 import java.util.Locale
 
 
-@OptIn(ExperimentalMaterial3Api::class)
+import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material.pullrefresh.pullRefresh
+import androidx.compose.material.pullrefresh.rememberPullRefreshState
+import androidx.compose.material.pullrefresh.PullRefreshIndicator
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.runtime.derivedStateOf
+
+
+
+
+
+
+
+
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterialApi::class)
 @Composable
 fun IncidentListScreen() {
 
@@ -56,7 +68,51 @@ fun IncidentListScreen() {
                 is IncidentListUiState.Loading -> CenterText("Loading…")
                 is IncidentListUiState.Error -> CenterText("Error: ${s.message}")
                 is IncidentListUiState.Empty -> CenterText("No incidents")
-                is IncidentListUiState.Success -> IncidentList(items = s.items)
+//                is IncidentListUiState.Success -> IncidentList(items = s.items)
+                is IncidentListUiState.Success -> {
+                    val listState = rememberLazyListState()
+                    val pullState = rememberPullRefreshState(
+                        refreshing = s.isRefreshing,
+                        onRefresh = { vm.refresh() }
+                    )
+
+                    val shouldLoadMore by remember {
+                        derivedStateOf {
+                            val lastVisible = listState.layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: 0
+                            val total = listState.layoutInfo.totalItemsCount
+                            total > 0 && lastVisible >= total - 3
+                        }
+                    }
+
+                    LaunchedEffect(shouldLoadMore) {
+                        if (shouldLoadMore) vm.loadMore()
+                    }
+
+                    Box(Modifier.fillMaxSize().pullRefresh(pullState)) {
+                        LazyColumn(
+                            state = listState,
+                            modifier = Modifier.fillMaxSize(),
+                            contentPadding = PaddingValues(12.dp),
+                            verticalArrangement = Arrangement.spacedBy(10.dp)
+                        ) {
+                            items(s.items) { item -> IncidentCard(item) }
+
+                            item {
+                                when {
+                                    s.isLoadingMore -> CenterRowLoading()
+                                    s.endReached -> CenterRowText("No more")
+                                    s.errorMessage != null -> CenterRowText("Load more error: ${s.errorMessage}")
+                                }
+                            }
+                        }
+
+                        PullRefreshIndicator(
+                            refreshing = s.isRefreshing,
+                            state = pullState,
+                            modifier = Modifier.align(Alignment.TopCenter)
+                        )
+                    }
+                }
             }
         }
     }
@@ -99,6 +155,30 @@ private fun IncidentCard(item: Incident) {
 @Composable
 private fun CenterText(text: String) {
     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+        Text(text)
+    }
+}
+
+@Composable
+private fun CenterRowLoading() {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 12.dp),
+        horizontalArrangement = Arrangement.Center
+    ) {
+        CircularProgressIndicator()
+    }
+}
+
+@Composable
+private fun CenterRowText(text: String) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 12.dp),
+        horizontalArrangement = Arrangement.Center
+    ) {
         Text(text)
     }
 }

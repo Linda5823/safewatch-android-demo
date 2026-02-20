@@ -40,8 +40,31 @@ class PostRepository(
     private suspend fun fetchFromNetwork(): List<Incident> {
         return RetrofitProvider.api
             .getPosts()
-            .map { it.postToDomain() } // 你之前的 PostDto.toDomain(): Incident
+            .map { it.postToDomain() } // previous PostDto.toDomain(): Incident
     }
+
+    suspend fun getIncidentsPageCacheFirst(page: Int, pageSize: Int): List<Incident> {
+        val offset = (page - 1) * pageSize
+
+        // 1) Read the DB page first
+        val cachedPage = dao.getPage(limit = pageSize, offset = offset).map { it.toDomain() }
+        if (cachedPage.isNotEmpty()) return cachedPage
+
+        // 2) This page is not in the database → Try fetching from the network (currently, refreshIncidents is a full fetch, which is fine)
+
+        // For simplicity: here we directly call refresh or fetchFromNetwork to write the entire database once, and then read the page
+
+        // (We can change this to real server-side pagination when  use a real backend later)
+        val freshAll = fetchFromNetwork()
+        dao.clearAll()
+        dao.upsertAll(freshAll.map { it.toEntity() })
+
+        return dao.getPage(limit = pageSize, offset = offset).map { it.toDomain() }
+    }
+
+
+
+
 }
 
 

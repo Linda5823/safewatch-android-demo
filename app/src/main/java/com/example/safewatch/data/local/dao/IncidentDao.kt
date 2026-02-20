@@ -17,4 +17,16 @@ interface IncidentDao {
 
     @Query("DELETE FROM incidents")
     suspend fun clearAll()
+
+
+    @Query("SELECT * FROM incidents ORDER BY happenedAtEpochMillis DESC LIMIT :limit OFFSET :offset")
+    suspend fun getPage(limit: Int, offset: Int): List<IncidentEntity>
+
+    @Query("SELECT COUNT(*) FROM incidents")
+    suspend fun count(): Int
+
+
+
 }
+
+

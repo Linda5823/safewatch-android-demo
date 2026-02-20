@@ -9,10 +9,26 @@ class GetIncidentsUseCase(
 ) {
     private val repository = PostRepository(context)
 
-    suspend operator fun invoke(): List<Incident> {
-        return repository.getIncidentsCacheFirst()
+    suspend operator fun invoke(
+        page: Int,
+        pageSize: Int
+    ): List<Incident> {
+        return repository.getIncidentsPageCacheFirst(page, pageSize)
     }
 }
+
+
+
+
+//class GetIncidentsUseCase(
+//    context: Context
+//) {
+//    private val repository = PostRepository(context)
+//
+//    suspend operator fun invoke(): List<Incident> {
+//        return repository.getIncidentsCacheFirst()
+//    }
+//}
 
 
 
