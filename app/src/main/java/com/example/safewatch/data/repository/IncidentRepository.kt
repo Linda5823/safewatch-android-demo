@@ -8,7 +8,7 @@ import com.example.safewatch.data.mapper.toDomain as postToDomain
 import com.example.safewatch.data.remote.api.RetrofitProvider
 import com.example.safewatch.domain.model.Incident
 
-class PostRepository(
+class IncidentRepository(
     context: Context
 ) {
     private val dao = DatabaseProvider.get(context).incidentDao()
