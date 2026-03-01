@@ -1,18 +1,17 @@
 package com.example.safewatch.data.mapper
 
-import com.example.safewatch.data.remote.dto.PostDto
+import com.example.safewatch.data.remote.dto.GenericDto
 import com.example.safewatch.domain.model.Incident
 
 /**
- * Maps network DTO → domain model.
+ * Maps generic API DTO → domain model.
  * Only data layer should know DTO structure.
  */
-
-fun PostDto.toDomain(): Incident {
+fun GenericDto.toDomain(): Incident {
     return Incident(
-        id = this.id.toString(),
+        id = id.toString(),
         happenedAtEpochMillis = System.currentTimeMillis(),
-        cameraName = this.title,
-        locationLabel = this.body
+        cameraName = title,
+        locationLabel = body
     )
 }

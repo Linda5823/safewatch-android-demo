@@ -1,13 +1,13 @@
 package com.example.safewatch.domain.usecase
 
 import android.content.Context
-import com.example.safewatch.data.repository.PostRepository
+import com.example.safewatch.data.repository.IncidentRepository
 import com.example.safewatch.domain.model.Incident
 
 class GetIncidentsUseCase(
     context: Context
 ) {
-    private val repository = PostRepository(context)
+    private val repository = IncidentRepository(context)
 
     suspend operator fun invoke(
         page: Int,

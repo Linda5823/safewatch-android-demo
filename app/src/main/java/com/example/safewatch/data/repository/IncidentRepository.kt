@@ -2,13 +2,11 @@ package com.example.safewatch.data.repository
 
 import android.content.Context
 import com.example.safewatch.data.local.db.DatabaseProvider
-import com.example.safewatch.data.mapper.toDomain
-import com.example.safewatch.data.mapper.toEntity
-import com.example.safewatch.data.mapper.toDomain as postToDomain
+import com.example.safewatch.data.mapper.*
 import com.example.safewatch.data.remote.api.RetrofitProvider
 import com.example.safewatch.domain.model.Incident
 
-class PostRepository(
+class IncidentRepository(
     context: Context
 ) {
     private val dao = DatabaseProvider.get(context).incidentDao()
@@ -39,8 +37,8 @@ class PostRepository(
 
     private suspend fun fetchFromNetwork(): List<Incident> {
         return RetrofitProvider.api
-            .getPosts()
-            .map { it.postToDomain() } // previous PostDto.toDomain(): Incident
+            .getItems()
+            .map { it.toDomain() }
     }
 
     suspend fun getIncidentsPageCacheFirst(page: Int, pageSize: Int): List<Incident> {
@@ -61,32 +59,4 @@ class PostRepository(
 
         return dao.getPage(limit = pageSize, offset = offset).map { it.toDomain() }
     }
-
-
-
-
 }
-
-
-
-
-//  ------------------3st version:----------------------
-
-
-//class PostRepository {
-//
-//    suspend fun fetchIncidents(): List<Incident> {
-//        return RetrofitProvider.api
-//            .getPosts()
-//            .map { it.toDomain() }
-//    }
-//}
-
-//  ------------------2nd version:----------------------
-
-//class PostRepository {
-//
-//    suspend fun fetchPosts(): List<PostDto> {
-//        return RetrofitProvider.api.getPosts()
-//    }
-//}

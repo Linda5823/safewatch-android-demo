@@ -3,14 +3,15 @@ package com.example.safewatch.presentation.ui.screens.incident_list
 import android.app.Application
 import androidx.lifecycle.ViewModelProvider
 import androidx.compose.ui.platform.LocalContext
-
-
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material.pullrefresh.PullRefreshIndicator
+import androidx.compose.material.pullrefresh.pullRefresh
+import androidx.compose.material.pullrefresh.rememberPullRefreshState
 import androidx.compose.material3.*
-import androidx.compose.material3.TopAppBar
-
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -20,21 +21,6 @@ import com.example.safewatch.domain.model.Incident
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
-
-
-import androidx.compose.material.ExperimentalMaterialApi
-import androidx.compose.material.pullrefresh.pullRefresh
-import androidx.compose.material.pullrefresh.rememberPullRefreshState
-import androidx.compose.material.pullrefresh.PullRefreshIndicator
-import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.runtime.derivedStateOf
-
-
-
-
-
-
-
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterialApi::class)
 @Composable
@@ -68,7 +54,6 @@ fun IncidentListScreen() {
                 is IncidentListUiState.Loading -> CenterText("Loading…")
                 is IncidentListUiState.Error -> CenterText("Error: ${s.message}")
                 is IncidentListUiState.Empty -> CenterText("No incidents")
-//                is IncidentListUiState.Success -> IncidentList(items = s.items)
                 is IncidentListUiState.Success -> {
                     val listState = rememberLazyListState()
                     val pullState = rememberPullRefreshState(

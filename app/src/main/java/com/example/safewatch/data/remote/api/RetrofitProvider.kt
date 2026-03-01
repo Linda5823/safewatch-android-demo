@@ -7,6 +7,8 @@ import retrofit2.converter.gson.GsonConverterFactory
 
 object RetrofitProvider {
 
+    private const val GENERIC_API_BASE_URL = "https://jsonplaceholder.typicode.com/"
+
     private val logging = HttpLoggingInterceptor().apply {
         level = HttpLoggingInterceptor.Level.BODY
     }
@@ -15,10 +17,10 @@ object RetrofitProvider {
         .addInterceptor(logging)
         .build()
 
-    val api: PostApi = Retrofit.Builder()
-        .baseUrl("https://jsonplaceholder.typicode.com/")
+    val api: GenericApi = Retrofit.Builder()
+        .baseUrl(GENERIC_API_BASE_URL)
         .client(client)
         .addConverterFactory(GsonConverterFactory.create())
         .build()
-        .create(PostApi::class.java)
+        .create(GenericApi::class.java)
 }
